@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 
 from brt_platform.config import settings, RedisKeyPrefix
 from brt_platform.core.connection_pool import ConnectionPool

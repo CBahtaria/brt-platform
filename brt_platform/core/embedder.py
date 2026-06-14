@@ -25,7 +25,7 @@ class Embedder:
     async def load_models(cls):
         if cls._dense_model and cls._sparse_model:
             return
-        logger.info(f"Loading embedding models (non-blocking)...")
+        logger.info("Loading embedding models (non-blocking)...")
         loop = asyncio.get_event_loop()
         cls._dense_model, cls._sparse_model = await loop.run_in_executor(_pool, cls._load_sync)
         logger.info("Embedding models ready.")
