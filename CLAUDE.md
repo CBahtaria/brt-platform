@@ -29,6 +29,8 @@ The current Claude Code session is **Fable** — the orchestrator and final revi
 - Import checks — `python -c "from brt_platform.X import Y"`
 - Scope discipline checks — running `make verify-scope`
 
+**Exception**: pure grep/bash in the orchestrating session (Fable) is faster and cheaper than spawning a Haiku agent. Only spawn Haiku when reading + light reasoning are both needed. For bare `grep`/`find`/`python -m py_compile`, use Bash directly in Fable's session.
+
 ---
 
 ## Review → Fix → Re-Review Loop
@@ -40,9 +42,11 @@ The current Claude Code session is **Fable** — the orchestrator and final revi
 4. If gaps found:
    → SendMessage({ to: <agentId>, message: "fix X — you missed Y at line Z" })
    → Implementer fixes, reports DONE again
-5. Repeat until file matches spec exactly
-6. Fable dispatches haiku to run syntax + import verification
-7. Task marked complete only after haiku confirms
+5. Repeat — MAX 3 CORRECTION ROUNDS per task.
+   Round 3 failure → do NOT re-dispatch sonnet.
+   Escalate: dispatch opus to redesign the approach from scratch.
+6. Fable runs syntax + import verification directly via Bash (not a Haiku agent for pure checks)
+7. Task marked complete only after verification passes
 ```
 
 ---
