@@ -1,0 +1,60 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: always
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  brt-api:
+    build:
+      context: .
+      target: dev
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
+      - BRT_ENV=development
+      - DEBUG=true
+    env_file:
+      - .env
+    volumes:
+      - ./brt_platform:/app/brt_platform
+      - /tmp:/tmp
+    restart: on-failure
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  qdrant_storage:

@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+!deployments/client-template/.env.template
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+/tmp/
+brt_wal.db
+deployments/poc-*/
+/app/models/
